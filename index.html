@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jendela Pujangga - V7.9 Navigasi Diperbaiki</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #000000; font-size: 18px; overflow-x: hidden; overflow-y: auto; line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+        .glass-nav { background: rgba(255,255,255,0.95); border-bottom: 3px solid #000000; color: #000000; z-index: 100; backdrop-filter: blur(10px); }
+        .background-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; }
+        .bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; }
+        .white-veil { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.94); }
+        .slide-container { position: relative; min-height: 85vh; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 10; padding-top: 20px; padding-bottom: 80px; }
+        .slide { display: none; width: 100%; max-width: 98%; margin: 0 auto; min-height: 70vh; padding: 20px; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .slide.active { display: flex; animation: slideEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+        @keyframes slideEnter { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* NAVIGASI DIPERBAIKI (LEBIH KECIL) */
+        .nav-arrow { 
+            position: fixed; top: 50%; transform: translateY(-50%); 
+            background: #ffffff; border: 2px solid #000000; 
+            color: #000000; width: 40px; height: 40px; /* Saiz dikecilkan dari 60px */
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.2s; font-size: 18px; /* Font dikecilkan */
+            z-index: 50; box-shadow: 3px 3px 0px #000000; /* Shadow dikecilkan */
+            opacity: 0.6; /* Sedikit telus bila tidak digunakan */
+        }
+        .nav-arrow:hover { 
+            transform: translateY(-50%) translate(1px, 1px); 
+            box-shadow: 1px 1px 0px #000000; 
+            opacity: 1; /* Terang bila hover */
+        }
+        .nav-prev { left: 10px; } /* Lebih rapat ke tepi */
+        .nav-next { right: 10px; } /* Lebih rapat ke tepi */
+
+        .objective-tag { background: #000000; padding: 8px 16px; font-size: 0.8rem; color: #ffffff; font-weight: 800; position: sticky; top: 10px; margin-bottom: 10px; align-self: center; z-index: 60; text-transform: uppercase; letter-spacing: 2px; }
+        .content-card { background: #ffffff; border: 3px solid #000000; padding: 40px; border-radius: 0px; text-align: left; width: 100%; box-shadow: 12px 12px 0px #000000; margin-bottom: 30px; transition: transform 0.2s; }
+        .poem-display { font-family: 'Playfair Display', serif; font-size: 2rem; line-height: 1.8; color: #000000; font-style: italic; }
+        .input-flat { background: #f8f8f8; border: 2px solid #000000; color: #000000; outline: none; padding: 15px; width: 100%; font-family: 'Playfair Display', serif; }
+        .btn-primary { background: #000000; color: #ffffff; transition: 0.2s; font-weight: 800; border: 3px solid #000000; box-shadow: 6px 6px 0px rgba(0,0,0,0.2); cursor: pointer; }
+        .btn-primary:hover { background: #ffffff; color: #000000; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); transform: translate(3px, 3px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background: transparent; color: #000000; transition: 0.2s; font-weight: 800; border: 3px solid #000000; cursor: pointer; }
+        .btn-secondary:hover { background: #f0f0f0; transform: translate(-2px, -2px); box-shadow: 4px 4px 0px rgba(0,0,0,0.1); }
+        .badge-academic { display: inline-block; padding: 4px 10px; background: #000000; color: #ffffff; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
+        .ai-comment-box { background: #fff; border: 2px dashed #000000; padding: 20px; margin-top: 20px; display: none; animation: fadeIn 1s; }
+        .puzzle-slot { background: #f3f4f6; border: 2px dashed #ccc; min-height: 60px; margin-bottom: 10px; display: flex; align-items: center; padding: 0 15px; cursor: pointer; transition: 0.2s; font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.2rem; position: relative; }
+        .puzzle-slot.filled { border: 2px solid #000; background: #fff; border-left: 5px solid #000; }
+        .puzzle-slot:hover { border-color: #000; }
+        .puzzle-label { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; font-family: 'Inter', sans-serif; font-weight: 800; text-transform: uppercase; color: #999; font-style: normal; }
+        .puzzle-option { background: #fff; border: 2px solid #000; padding: 15px; margin-bottom: 10px; cursor: pointer; font-family: 'Playfair Display', serif; font-size: 1.1rem; transition: 0.2s; box-shadow: 4px 4px 0 #000; }
+        .puzzle-option:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+        .puzzle-option.used { opacity: 0.3; pointer-events: none; border-color: #ccc; box-shadow: none; }
+        .quiz-option { background: #fff; border: 2px solid #eee; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .quiz-option:hover { background: #f0f0f0; border-color: #000; }
+        .quiz-option.selected { background: #000; color: #fff; border-color: #000; }
+        .quiz-option:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #000000; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
+        #adibah-toast { position: fixed; bottom: 30px; right: 30px; background: #fff; border: 4px solid #000; padding: 20px; max-width: 350px; z-index: 9999; box-shadow: 8px 8px 0px rgba(0,0,0,0.2); transform: translateY(200%); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: flex-start; }
+        #adibah-toast.show { transform: translateY(0); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div class="background-wrapper">
+        <div class="bg-overlay" style="background-image: url('https://images.unsplash.com/photo-1596401057633-565652ca65a0?q=80&w=1964&auto=format&fit=crop');"></div>
+        <div class="white-veil"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="glass-nav sticky top-0">
+        <div class="w-full px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <span class="text-3xl">⚜️</span>
+                <h1 class="text-xl md:text-2xl font-bold tracking-widest uppercase text-black">Jendela Pujangga <span class="text-xs bg-black text-white px-2 py-1 ml-2">IGCSE</span></h1>
+            </div>
+            
+            <div id="student-name-display" class="hidden font-bold text-lg uppercase tracking-wider border-b-2 border-black text-black">
+                Pelajar: <span id="display-name" class="text-blue-900"></span>
+            </div>
+
+            <div id="teacher-tabs" class="hidden flex space-x-2">
+                <button onclick="toggleTeacherSection('notes')" id="tab-notes" class="px-4 py-2 font-bold text-sm transition text-white bg-black">📖 Modul</button>
+                <button onclick="toggleTeacherSection('live')" id="tab-live" class="px-4 py-2 font-bold text-sm transition text-black border-2 border-black hover:bg-black hover:text-white">📡 Live</button>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button onclick="toggleFullScreen()" title="Fullscreen (F)" class="hidden md:block text-xl text-black hover:scale-110 transition">⛶</button>
+                <button onclick="location.reload()" class="font-bold uppercase tracking-widest text-xs border-2 border-black px-3 py-1 hover:bg-black hover:text-white transition text-black">Reset</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="adibah-toast">
+        <div class="text-3xl mr-4">👩‍🏫</div>
+        <div>
+            <h4 class="font-black uppercase text-sm mb-1 text-black">Cikgu Adibah Berkata:</h4>
+            <p id="adibah-toast-msg" class="text-sm italic font-serif leading-tight text-black">"Teruskan usaha!"</p>
+        </div>
+    </div>
+
+    <main id="app" class="flex-grow w-full relative">
+        
+        <!-- LANDING PAGE -->
+        <div id="landing-view" class="w-full h-screen flex flex-col justify-center items-center text-center px-6 relative -mt-20">
+            <div class="relative z-10 w-full max-w-[98%]">
+                <h2 class="text-6xl md:text-9xl font-black mb-4 uppercase tracking-tighter leading-none text-black">Analisis<br>Klasik</h2>
+                <p class="text-xl md:text-2xl font-light mb-12 text-black max-w-4xl mx-auto">Platform interaktif untuk menguasai seni Pantun & Syair bagi silibus IGCSE First Language Malay (0696).</p>
+                <div class="flex flex-col md:flex-row justify-center gap-6">
+                    <button onclick="switchView('student')" class="px-12 py-5 btn-primary font-black uppercase tracking-widest text-xl">Pelajar 👨‍🎓</button>
+                    <button onclick="switchView('teacher')" class="px-12 py-5 bg-transparent border-4 border-black font-black uppercase tracking-widest hover:bg-black hover:text-white transition text-xl text-black">Guru 👩‍🏫</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDENT VIEW -->
+        <div id="student-view" class="hidden w-full min-h-screen flex flex-col relative pb-20">
+            <div class="relative z-10 w-full flex flex-col items-center px-6 pt-8">
+
+                <!-- LOGIN SCREEN -->
+                <div id="phase-login" class="w-full max-w-6xl animate-fade-in mt-10">
+                    <div class="content-card p-12 text-center shadow-2xl">
+                        <div class="text-7xl mb-6">👋</div>
+                        <h2 class="text-4xl font-black uppercase mb-4 text-black">Selamat Datang</h2>
+                        <p class="mb-8 text-gray-600 text-xl">Sila masukkan nama anda untuk memulakan sesi pembelajaran.</p>
+                        <input type="text" id="login-name" class="input-flat text-center text-3xl font-bold mb-8" placeholder="Nama Anda" onkeypress="handleEnter(event)">
+                        <button onclick="studentLogin()" class="btn-primary w-full py-5 text-2xl uppercase tracking-widest">Mula Belajar 🚀</button>
+                    </div>
+                </div>
+                
+                <!-- Fasa 1: Vocabulary -->
+                <div id="phase-1" class="hidden w-full max-w-[98%] animate-fade-in">
+                    <div class="objective-tag">Fasa 1: Perbendaharaan Kata (10 Diksi)</div>
+                    <h2 class="text-5xl md:text-6xl font-black mb-10 uppercase text-center text-black">Diksi Aras Tinggi</h2>
+                    <p class="text-center mb-8 text-gray-600 italic">Klik pada setiap kad untuk melihat maksud tersembunyi.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
+                        <!-- 10 CARDS MANUAL INSERTION -->
+                        <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Alam</span><br><b class="text-2xl text-black group-hover:text-blue-900 mb-2">Pawana</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Angin</small>
+                            <p class="definition hidden text-sm font-serif italic text-blue-900 bg-blue-50 p-3 border-l-4 border-blue-900 animate-fade-in">"Angin yang bertiup lembut. Sering digunakan untuk suasana damai."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                        <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Nilai</span><br><b class="text-2xl text-black group-hover:text-yellow-700 mb-2">Kencana</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Emas</small>
+                            <p class="definition hidden text-sm font-serif italic text-yellow-900 bg-yellow-50 p-3 border-l-4 border-yellow-700 animate-fade-in">"Simbol kemuliaan dan kekayaan raja-raja Melayu."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                        <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Fana</span><br><b class="text-2xl text-black group-hover:text-purple-900 mb-2">Mayapada</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Dunia</small>
+                            <p class="definition hidden text-sm font-serif italic text-purple-900 bg-purple-50 p-3 border-l-4 border-purple-900 animate-fade-in">"Dunia ini sebagai tempat persinggahan sementara."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                        <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Suci</span><br><b class="text-2xl text-black group-hover:text-teal-700 mb-2">Nirmala</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Bersih</small>
+                            <p class="definition hidden text-sm font-serif italic text-teal-900 bg-teal-50 p-3 border-l-4 border-teal-800 animate-fade-in">"Sesuatu yang suci, tidak ternoda, dan tulus."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                        <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Jiwa</span><br><b class="text-2xl text-black group-hover:text-red-900 mb-2">Sukma</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Nyawa</small>
+                            <p class="definition hidden text-sm font-serif italic text-red-900 bg-red-50 p-3 border-l-4 border-red-800 animate-fade-in">"Roh atau semangat dalam diri seseorang."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                         <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Cahaya</span><br><b class="text-2xl text-black group-hover:text-orange-600 mb-2">Kirana</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Sinar</small>
+                            <p class="definition hidden text-sm font-serif italic text-orange-900 bg-orange-50 p-3 border-l-4 border-orange-800 animate-fade-in">"Cahaya yang bersinar indah dan memukau."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                         <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Jagat</span><br><b class="text-2xl text-black group-hover:text-green-800 mb-2">Buana</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Alam Semesta</small>
+                            <p class="definition hidden text-sm font-serif italic text-green-900 bg-green-50 p-3 border-l-4 border-green-800 animate-fade-in">"Seluruh alam semesta. Meliputi bumi dan isinya."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                        <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Mulia</span><br><b class="text-2xl text-black group-hover:text-pink-700 mb-2">Ratna</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Permata</small>
+                            <p class="definition hidden text-sm font-serif italic text-pink-900 bg-pink-50 p-3 border-l-4 border-pink-700 animate-fade-in">"Intan berlian. Kiasan untuk gadis cantik."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                         <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Lembut</span><br><b class="text-2xl text-black group-hover:text-cyan-600 mb-2">Bayu</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Angin Sepoi</small>
+                            <p class="definition hidden text-sm font-serif italic text-cyan-900 bg-cyan-50 p-3 border-l-4 border-cyan-700 animate-fade-in">"Angin yang bertiup perlahan dan menyegarkan."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                        <button class="p-8 content-card hover:-translate-y-1 transition text-center group flex flex-col items-center justify-center min-h-[220px]" onclick="toggleDef(this)">
+                            <span class="badge-academic">Penulis</span><br><b class="text-2xl text-black group-hover:text-indigo-900 mb-2">Pujangga</b><small class="text-gray-500 font-bold uppercase tracking-widest mb-4">Sasterawan</small>
+                            <p class="definition hidden text-sm font-serif italic text-indigo-900 bg-indigo-50 p-3 border-l-4 border-indigo-900 animate-fade-in">"Pengarang, penyair, atau orang bijak pandai."</p>
+                            <span class="mt-4 text-xs text-gray-400 font-bold uppercase tracking-widest instruction">Klik Info ℹ️</span>
+                        </button>
+                    </div>
+                    <div class="flex justify-center"><button onclick="nextPhase(2)" class="btn-primary px-16 py-5 text-2xl uppercase tracking-widest">Uji Kefahaman ➡️</button></div>
+                </div>
+
+                <!-- Fasa 2: Interactive Quiz (FULL 8 QUESTIONS) -->
+                <div id="phase-2" class="hidden w-full max-w-[98%] mx-auto animate-fade-in mb-20">
+                    <div class="objective-tag">Fasa 2: Uji Diksi</div>
+                    <div class="content-card p-10 md:p-16 text-center">
+                        <div class="flex justify-between items-center mb-8"><h2 class="text-4xl font-black uppercase text-black">Lengkapkan Ayat</h2><span id="quiz-progress" class="text-lg font-bold bg-black text-white px-4 py-2">Soalan 1/8</span></div>
+                        <div id="quiz-container"><p class="text-3xl mb-10 font-serif italic text-black" id="quiz-question">Loading...</p><div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" id="quiz-options"></div>
+                            <div id="correction-area" class="hidden mt-6 animate-fade-in p-6 bg-red-50 border-2 border-red-500 rounded"><p class="mb-4 text-red-600 font-bold text-xl">Jawapan salah. Sila taip semula perkataan <span id="correct-word-hint" class="text-black font-black uppercase underline decoration-4 decoration-yellow-400"></span>.</p><input type="text" id="correction-input" class="input-flat text-center text-3xl font-bold mb-4" placeholder="Taip di sini..." onkeypress="handleCorrectionEnter(event)"><button onclick="verifyCorrection()" class="btn-primary w-full py-3 uppercase text-lg">Semak Ejaan & Teruskan</button></div>
+                        </div>
+                        <div id="quiz-feedback" class="hidden mb-8 text-2xl font-bold"></div>
+                        <div class="flex gap-6 mt-8 justify-center"><button onclick="nextPhase(1)" class="btn-secondary w-1/3 py-5 text-xl uppercase tracking-widest">⬅️ Ulang Kaji</button><button id="btn-next-question" onclick="nextQuestion()" class="hidden btn-primary w-2/3 py-5 text-xl uppercase tracking-widest">Soalan Seterusnya ➡️</button><button id="btn-finish-quiz" onclick="nextPhase(3)" class="hidden btn-primary w-2/3 py-5 text-xl uppercase tracking-widest bg-green-600 border-green-800 text-white">Tamat Kuiz ➡️</button></div>
+                    </div>
+                </div>
+
+                <!-- Fasa 3: Puzzle (FULL LOGIC) -->
+                <div id="phase-3" class="hidden w-full max-w-[98%] mx-auto animate-fade-in mb-20">
+                    <div class="objective-tag">Fasa 3: Bengkel Struktur</div>
+                    <div class="content-card p-10 md:p-14 text-center">
+                        <h2 class="text-4xl md:text-5xl font-black uppercase mb-4 text-black">Susun Suai Pantun</h2>
+                        <p class="text-xl mb-10 text-gray-600">Klik baris di bawah untuk menyusunnya menjadi pantun yang betul (Rima A-B-A-B).</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
+                            <div class="bg-gray-50 p-8 border-2 border-black"><h4 class="font-bold uppercase text-sm mb-6 text-gray-400 tracking-widest">Ruang Jawapan</h4><div id="slot-0" class="puzzle-slot" onclick="returnLine(0)"><span class="puzzle-label">Pembayang 1 (A)</span></div><div id="slot-1" class="puzzle-slot" onclick="returnLine(1)"><span class="puzzle-label">Pembayang 2 (B)</span></div><div id="slot-2" class="puzzle-slot" onclick="returnLine(2)"><span class="puzzle-label">Maksud 1 (A)</span></div><div id="slot-3" class="puzzle-slot" onclick="returnLine(3)"><span class="puzzle-label">Maksud 2 (B)</span></div></div>
+                            <div><h4 class="font-bold uppercase text-sm mb-6 text-gray-400 tracking-widest">Pilihan Baris</h4><div id="option-pool"></div><div id="puzzle-feedback" class="hidden mt-6 font-bold text-xl"></div><div class="flex flex-col gap-6 mt-8"><button id="btn-check-puzzle" onclick="checkPuzzle()" class="btn-primary w-full py-5 text-xl uppercase tracking-widest">Semak Susunan</button><div class="flex gap-6 w-full"><button onclick="nextPhase(2)" class="btn-secondary flex-1 py-5 text-xl uppercase tracking-widest">⬅️ Kembali</button><button id="btn-next-phase-3" onclick="nextPhase(4)" class="hidden btn-primary flex-1 py-5 text-xl uppercase tracking-widest bg-green-600 border-green-800 text-white">Ke Transformasi ➡️</button></div></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fasa 4: Transformasi Genre -->
+                <div id="phase-4" class="hidden w-full max-w-[98%] mx-auto animate-fade-in mb-20">
+                    <div class="objective-tag">Fasa 4: Transformasi Genre</div>
+                    <div class="content-card p-10 md:p-16 text-center">
+                        <h2 class="text-4xl font-black uppercase mb-8 text-black">Adaptasi Hikayat</h2>
+                        <div class="bg-yellow-50 p-8 border-l-8 border-black mb-8 text-left"><p class="font-serif italic text-2xl leading-relaxed text-black">"Dengarlah kisah suatu riwayat,<br>Raja di desa negeri Kembayat,<br>Dikarang fakir dijadikan hikayat,<br>Supaya menjadi tamsil ibarat."</p></div>
+                        <p class="text-xl mb-6 text-black font-bold">Tugasan: Tulis semula rangkap syair di atas menjadi satu perenggan cerita pendek (Prosa).</p>
+                        <textarea id="prosaInput" rows="5" class="input-flat text-xl" placeholder="Pada zaman dahulu, terdapat sebuah negeri bernama Kembayat..."></textarea>
+                        <div class="flex gap-6 mt-8"><button onclick="nextPhase(3)" class="btn-secondary w-1/3 py-5 text-xl uppercase tracking-widest">⬅️ Kembali</button><button onclick="saveAndNext(5, 'prosa')" class="btn-primary w-2/3 py-5 text-xl uppercase tracking-widest">Simpan & Teruskan ➡️</button></div>
+                    </div>
+                </div>
+
+                <!-- Fasa 5: Show Don't Tell (Space Theme) -->
+                <div id="phase-5" class="hidden w-full max-w-[98%] mx-auto animate-fade-in mb-20">
+                    <div class="objective-tag">Fasa 5: Lensa Pujangga</div>
+                    <div class="content-card p-10 md:p-16 text-center">
+                        <h2 class="text-4xl font-black uppercase mb-8 text-black">Show, Don't Tell</h2>
+                        <img src="https://images.unsplash.com/photo-1505506874110-6a7a69069a08?q=80&w=1000&auto=format&fit=crop" class="w-full h-80 object-cover border-4 border-black mb-8 grayscale hover:grayscale-0 transition duration-500">
+                        <p class="text-xl mb-6 text-black">Jangan tulis "Langit itu gelap". Gunakan teknik <b>Personifikasi</b> atau <b>Simile</b> untuk menggambarkan keindahan angkasa raya.</p>
+                        <textarea id="deskriptifInput" rows="4" class="input-flat text-xl" placeholder="Bintang-bintang berkelipan bagaikan permata..."></textarea>
+                        <div class="flex gap-6 mt-8"><button onclick="nextPhase(4)" class="btn-secondary w-1/3 py-5 text-xl uppercase tracking-widest">⬅️ Kembali</button><button onclick="saveAndNext(6, 'deskriptif')" class="btn-primary w-2/3 py-5 text-xl uppercase tracking-widest bg-green-600 border-green-800 text-white">Ke Cabaran Akhir ➡️</button></div>
+                    </div>
+                </div>
+
+                <!-- Fasa 6: Creation (SECURE & NO TIMER) -->
+                <div id="phase-6" class="hidden w-full max-w-[98%] mx-auto animate-fade-in mb-20">
+                    <div class="objective-tag">Fasa 6: Mencipta Karya (IGCSE Paper 2)</div>
+                    <div class="content-card p-10 md:p-16 space-y-8 text-center">
+                        <h2 class="text-5xl font-black uppercase border-b-4 border-black pb-6 text-black">Makmal Puisi</h2>
+                        
+                        <div class="flex justify-center gap-6 mb-4">
+                            <button id="btn-mode-pantun" onclick="setCreationMode('pantun')" class="px-8 py-3 border-2 border-black bg-black text-white font-bold uppercase transition hover:scale-105 shadow-md text-lg">Mod Pantun</button>
+                            <button id="btn-mode-syair" onclick="setCreationMode('syair')" class="px-8 py-3 border-2 border-black bg-white text-black font-bold uppercase transition hover:bg-gray-100 hover:scale-105 shadow-md text-lg">Mod Syair</button>
+                        </div>
+
+                        <div id="creation-tips" class="bg-blue-50 p-6 border-l-8 border-blue-800 text-left text-lg animate-fade-in">
+                            <span class="font-bold text-blue-900">💡 Tips Pantun:</span> Rima akhir mestilah <b>A-B-A-B</b>. Dua baris atas ialah pembayang (kiasan), dua baris bawah ialah maksud.
+                        </div>
+
+                        <div class="flex justify-center mb-6"><button onclick="generateTheme()" class="text-base bg-gray-100 hover:bg-black hover:text-white border border-black px-6 py-3 transition rounded-full flex items-center font-bold uppercase tracking-wider">🎲 Jana Tema Rawak</button></div>
+                        <div id="theme-display" class="hidden text-2xl font-serif italic text-blue-800 mb-6 animate-pop"></div>
+                        
+                        <div class="text-left space-y-4">
+                            <label class="font-bold text-sm uppercase tracking-widest text-black" id="karyaLabel">Karya Anda (Pantun)</label>
+                            <textarea id="karyaInput" rows="6" class="input-flat text-3xl italic" placeholder="Tuai padi antara masak..."></textarea>
+                        </div>
+                        
+                        <div class="flex gap-6 mt-6">
+                            <button onclick="nextPhase(5)" class="btn-secondary w-1/3 py-6 text-xl uppercase tracking-widest">⬅️ Kembali</button>
+                            <button id="btnHantar" onclick="hantarData()" class="btn-primary w-2/3 py-6 text-xl uppercase tracking-widest">Hantar & Semak 🚀</button>
+                        </div>
+                        
+                        <div id="statusMsg" class="hidden text-center font-bold text-xl text-green-700 mt-4">✅ Diterima! Semak ulasan di bawah.</div>
+                        <div id="ai-loading" class="hidden text-center text-xl mt-8"><div class="loading-spinner"></div> Cikgu Adibah Sedang Menanda (Secara Maya)...</div>
+                        
+                        <div id="ai-comment" class="ai-comment-box text-left">
+                            <div class="flex items-center mb-4"><span class="text-3xl mr-3">👩‍🏫</span><h4 class="text-xl font-black uppercase text-black">Ulasan Cikgu Adibah:</h4></div>
+                            <p id="ai-text" class="text-xl italic text-black mb-6 whitespace-pre-line"></p>
+                            <div class="border-t-2 border-black pt-4 flex justify-between items-center"><span class="font-bold text-sm uppercase text-black">Markah Keseluruhan:</span><span id="ai-score" class="text-5xl font-black text-black">-/10</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEACHER VIEW (UPDATED SLIDES) -->
+        <div id="teacher-view" class="hidden w-full">
+            <div id="section-notes" class="w-full">
+                <button onclick="changeSlide(-1)" class="nav-arrow nav-prev">❮</button><button onclick="changeSlide(1)" class="nav-arrow nav-next">❯</button>
+                <div class="slide-container">
+                    
+                    <!-- Slide 1: Intro -->
+                    <div class="slide active" id="slide-1">
+                        <div class="objective-tag">Topik Hari Ini</div>
+                        <div class="content-card max-w-[98%] text-center py-24 text-black">
+                            <h2 class="text-7xl md:text-9xl font-black mb-8 uppercase text-black">Puisi<br>Melayu</h2>
+                            <p class="text-3xl font-serif italic mb-8 text-black">"Bukan sekadar rima, tetapi wahana budi dan intelek."</p>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Objectives -->
+                    <div class="slide" id="slide-2">
+                        <div class="objective-tag">Objektif</div>
+                        <div class="content-card max-w-[98%]">
+                            <div class="grid md:grid-cols-2 gap-16">
+                                <div>
+                                    <h4 class="text-5xl font-black mb-6 uppercase text-black">Objektif (LO)</h4>
+                                    <p class="text-3xl">Menganalisis penggunaan <b>bahasa kiasan</b>.</p>
+                                </div>
+                                <div class="bg-gray-100 p-10 border-l-8 border-black">
+                                    <h4 class="text-2xl font-bold mb-4 uppercase text-gray-500">Kriteria (SC)</h4>
+                                    <ul class="text-2xl space-y-4 list-disc list-inside">
+                                        <li>Membezakan Pantun vs Syair.</li>
+                                        <li>Mengesan Asonansi & Aliterasi.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3: Logik Alam (NEW) -->
+                    <div class="slide" id="slide-3">
+                        <div class="objective-tag">Analisis Klasik</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-[98%] items-center">
+                            <div class="space-y-6">
+                                <h2 class="text-6xl font-black uppercase text-black leading-none">Logik<br>Alam</h2>
+                                <div class="content-card bg-yellow-50 border-4 border-black">
+                                    <h4 class="text-2xl font-bold uppercase mb-2">Konsep Pembayang:</h4>
+                                    <p class="text-xl leading-relaxed">Pembayang bukan sekadar hiasan. Ia adalah <b>"penanda mood"</b> atau bayangan kepada maksud.</p>
+                                </div>
+                            </div>
+                            <div class="content-card p-10 text-center border-4 border-black shadow-[12px_12px_0px_#000]">
+                                <p class="poem-display text-4xl md:text-5xl italic font-serif leading-relaxed">"Pisang emas dibawa belayar,<br>Masak sebiji di atas peti..."</p>
+                                <p class="text-lg mt-6 text-gray-600 font-bold uppercase tracking-widest">- Pantun Budi -</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 4: Pantun vs Syair (Fixed Contrast) -->
+                    <div class="slide" id="slide-4">
+                        <div class="objective-tag">Analisis Struktur</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-[98%] items-start">
+                            <div class="space-y-6">
+                                <h2 class="text-5xl font-black uppercase text-black leading-none">Pantun<br>VS<br>Syair</h2>
+                                <div class="content-card p-6 bg-yellow-50 border-2 border-black">
+                                    <h4 class="text-xl font-bold uppercase mb-2">Pantun (A-B-A-B)</h4>
+                                    <p class="text-lg italic font-serif mb-2">"Pisang emas dibawa belayar,<br>Masak sebiji di atas peti..."</p>
+                                    <p class="text-sm font-bold text-gray-500 uppercase mt-2">Ciri Utama:</p>
+                                    <ul class="list-disc list-inside text-sm">
+                                        <li>Ada Pembayang (Baris 1-2)</li>
+                                        <li>Ada Maksud (Baris 3-4)</li>
+                                        <li>Rima selang (abab)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="space-y-6 mt-10 md:mt-24">
+                                <div class="content-card p-6 bg-black text-white border-2 border-black">
+                                    <h4 class="text-xl font-bold uppercase mb-2 text-white">Syair (A-A-A-A)</h4>
+                                    <p class="text-lg italic font-serif mb-2 text-gray-200">"Dengarlah kisah suatu riwayat,<br>Raja di desa negeri Kembayat,<br>Dikarang fakir dijadikan hikayat,<br>Supaya menjadi tamsil ibarat."</p>
+                                    <p class="text-sm font-bold text-gray-400 uppercase mt-2">Ciri Utama:</p>
+                                    <ul class="list-disc list-inside text-sm text-gray-200">
+                                        <li>Tiada pembayang</li>
+                                        <li>Semua baris adalah isi/cerita</li>
+                                        <li>Rima sekata (aaaa)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 5: Gaya Bahasa (Highlighted Examples) -->
+                    <div class="slide" id="slide-5">
+                        <div class="objective-tag">Paper 2: Gaya Bahasa</div>
+                        <div class="content-card max-w-[98%]">
+                            <h2 class="text-5xl font-black mb-10 uppercase text-center">Tekstur Bunyi</h2>
+                            <div class="grid md:grid-cols-2 gap-10">
+                                <div class="p-8 border-4 border-black hover:bg-black hover:text-white transition group cursor-pointer">
+                                    <h4 class="text-3xl font-black uppercase mb-4 group-hover:text-white">Asonansi</h4>
+                                    <p class="text-lg mb-2 font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400">Pengulangan Vokal (a, e, i, o, u)</p>
+                                    <div class="bg-gray-100 p-4 border-l-4 border-gray-400 group-hover:bg-gray-800 group-hover:border-white">
+                                        <p class="font-serif italic text-xl">"Ak<span class="font-bold text-red-600 group-hover:text-yellow-400">u</span> lalai mab<span class="font-bold text-red-600 group-hover:text-yellow-400">u</span>k bercint<span class="font-bold text-red-600 group-hover:text-yellow-400">u</span>..."</p>
+                                        <p class="text-xs mt-2 opacity-70">Pengulangan vokal 'u'</p>
+                                    </div>
+                                </div>
+                                <div class="p-8 border-4 border-black hover:bg-black hover:text-white transition group cursor-pointer">
+                                    <h4 class="text-3xl font-black uppercase mb-4 group-hover:text-white">Aliterasi</h4>
+                                    <p class="text-lg mb-2 font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400">Pengulangan Konsonan</p>
+                                    <div class="bg-gray-100 p-4 border-l-4 border-gray-400 group-hover:bg-gray-800 group-hover:border-white">
+                                        <p class="font-serif italic text-xl">"<span class="font-bold text-blue-600 group-hover:text-cyan-400">K</span>alau <span class="font-bold text-blue-600 group-hover:text-cyan-400">k</span>asih ber<span class="font-bold text-blue-600 group-hover:text-cyan-400">k</span>urang dalam..."</p>
+                                        <p class="text-xs mt-2 opacity-70">Pengulangan konsonan 'k'</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 6: Narrative Transformation -->
+                    <div class="slide" id="slide-6">
+                        <div class="objective-tag">Kemahiran Naratif</div>
+                        <div class="content-card max-w-[98%]">
+                            <h2 class="text-5xl font-black mb-8 uppercase text-center">Transformasi Genre</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-0 border-4 border-black">
+                                <div class="p-10 bg-black text-white" style="background-color: #000; color: #fff;">
+                                    <h4 class="font-bold uppercase mb-4 text-2xl text-white border-b-2 border-white inline-block">Asal (Syair)</h4>
+                                    <p class="italic font-serif text-2xl leading-relaxed text-gray-200">"Raja di desa negeri Kembayat,<br>Dikarang fakir dijadikan hikayat..."</p>
+                                    <div class="mt-6 text-sm text-gray-400 uppercase font-bold tracking-widest">
+                                        Ciri: Bahasa Puitis & Berima
+                                    </div>
+                                </div>
+                                <div class="p-10 bg-white text-black relative">
+                                    <div class="absolute top-1/2 -left-4 w-8 h-8 bg-white border-2 border-black rounded-full flex items-center justify-center font-bold z-10 hidden md:flex">➡</div>
+                                    <h4 class="font-bold uppercase mb-4 text-2xl border-b-2 border-black inline-block">Adaptasi (Prosa)</h4>
+                                    <p class="font-serif text-2xl leading-relaxed">"Pada zaman dahulu, di sebuah negeri bernama Kembayat, terdapat seorang raja yang memerintah..."</p>
+                                    <div class="mt-6 text-sm text-gray-500 uppercase font-bold tracking-widest">
+                                        Ciri: Ayat Gramatis & Bercerita
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 7: Show Don't Tell -->
+                    <div class="slide" id="slide-7">
+                        <div class="objective-tag">Penulisan Deskriptif</div>
+                        <div class="content-card max-w-[98%] text-center">
+                            <h2 class="text-5xl font-black mb-8 uppercase">Show, Don't Tell</h2>
+                            <p class="text-xl mb-8 max-w-2xl mx-auto">Dalam IGCSE Paper 2, jangan hanya lapor fakta. Lukiskan imej dalam minda pembaca menggunakan pancaindera.</p>
+                            
+                            <div class="grid md:grid-cols-2 gap-8 text-left">
+                                <div class="p-8 bg-red-50 border-l-8 border-red-500">
+                                    <span class="font-black text-red-800 text-sm uppercase tracking-widest mb-2 block">❌ TELL (Hambar)</span>
+                                    <p class="text-3xl font-serif">"Rumah itu sangat usang dan lama."</p>
+                                    <p class="text-sm mt-4 text-red-700 italic">Hanya memberitahu fakta. Membosankan.</p>
+                                </div>
+                                <div class="p-8 bg-green-50 border-l-8 border-green-500 shadow-xl transform scale-105">
+                                    <span class="font-black text-green-800 text-sm uppercase tracking-widest mb-2 block">✅ SHOW (Puitis)</span>
+                                    <p class="text-3xl font-serif">"Dinding kayunya merintih dimakan anai-anai, manakala atapnya bocor menangisi hujan..."</p>
+                                    <p class="text-sm mt-4 text-green-700 italic">Menggunakan Personifikasi (merintih, menangisi).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 8: Bedah Jawapan (Interactive A*) -->
+                    <div class="slide" id="slide-8">
+                        <div class="objective-tag">Bedah Jawapan: IGCSE Paper 2</div>
+                        <div class="content-card max-w-[98%] w-full">
+                            <h2 class="text-5xl font-black mb-6 uppercase text-center">Analisis Kualiti Jawapan</h2>
+                            <div class="bg-yellow-50 p-6 border-l-4 border-black mb-8 text-left">
+                                <h4 class="font-bold uppercase text-sm mb-2 text-gray-500">Contoh Soalan Peperiksaan:</h4>
+                                <p class="text-2xl font-serif italic text-black">"Jelaskan <b>kesan</b> penggunaan unsur alam (nature imagery) yang terdapat dalam rangkap kedua pantun tersebut."</p>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                                <div class="p-6 bg-red-50 border-2 border-red-200">
+                                    <h4 class="font-bold text-red-800 uppercase flex justify-between">Gred C <span class="text-2xl">😐</span></h4>
+                                    <p class="text-lg italic mt-4">"Penulis guna pokok pisang sebab pisang senang tumbuh. Jadi maksudnya kita kena rajin macam tanam pisang."</p>
+                                    <hr class="border-red-200 my-4">
+                                    <p class="text-xs font-bold text-red-700 uppercase">Komen Pemeriksa:</p>
+                                    <p class="text-sm text-red-900">Jawapan terlalu literal. Tiada istilah sastera digunakan. Hanya menyatakan maksud tersurat.</p>
+                                </div>
+                                <div id="grade-a-cover" class="absolute inset-y-0 right-0 w-full md:w-1/2 bg-gray-200 border-2 border-black flex items-center justify-center cursor-pointer hover:bg-black hover:text-white transition z-10" onclick="toggleGradeA()">
+                                    <h4 class="text-2xl font-black uppercase tracking-widest text-center">Klik Untuk Lihat<br>Jawapan A*</h4>
+                                </div>
+                                <div id="grade-a-content" class="p-6 bg-green-50 border-2 border-green-200 opacity-20 transition-opacity duration-500">
+                                    <h4 class="font-bold text-green-800 uppercase flex justify-between">Gred A* <span class="text-2xl">🌟</span></h4>
+                                    <p class="text-lg italic mt-4">"Pengarang menggunakan <b>imej alam</b> 'pisang emas' sebagai simbolik kepada sesuatu yang bernilai tinggi. Ini <b>berjajar (parallel)</b> dengan maksud pantun bahawa budi yang sedikit tetap akan dikenang selamanya."</p>
+                                    <hr class="border-green-200 my-4">
+                                    <p class="text-xs font-bold text-green-700 uppercase">Komen Pemeriksa:</p>
+                                    <p class="text-sm text-green-900">Analisis simbolik yang tepat. Menggunakan istilah teknikal (imej alam, simbolik) dengan berkesan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 9: Live Gallery -->
+                    <div class="slide" id="slide-9">
+                        <div class="objective-tag">Galeri Langsung</div>
+                        <div class="content-card max-w-[98%] text-center py-20">
+                            <h2 class="text-7xl font-black mb-6 uppercase text-black">Masa Untuk<br>Berkarya</h2>
+                            <p class="text-2xl mb-10">Lihat hasil kerja rakan-rakan anda secara langsung.</p>
+                            <button onclick="toggleTeacherSection('live')" class="btn-primary px-16 py-6 text-2xl uppercase tracking-widest shadow-xl">Buka Galeri Live 📡</button>
+                        </div>
+                    </div>
+
+                    <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-50" id="slide-dots"></div>
+                </div>
+            </div>
+             <div id="section-live" class="hidden w-full min-h-screen pb-40 relative">
+                <div class="relative z-10 pt-10 px-6 w-full max-w-[98%] mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-10 bg-white px-8 py-8 border-4 border-black shadow-[10px_10px_0px_#000]">
+                        <h2 class="text-4xl md:text-5xl font-black uppercase text-black">Galeri Live</h2>
+                        <div class="flex items-center space-x-4"><div class="flex items-center bg-gray-50 px-6 py-3 border-2 border-black"><div id="live-indicator" class="w-4 h-4 bg-red-600 rounded-full animate-pulse mr-3"></div><span class="font-black tracking-widest text-lg uppercase text-black" id="status-text">MENYAMBUNG...</span></div></div>
+                    </div>
+                    <div id="card-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURATION ---
+        // INI URL BARU ANDA:
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwy9P_44yjBbVwJbP_n7_qgUmxObdZEIDQglixW2Jvqfkj_aoinDaoAHyvEIeSOFiL0/exec';
+        
+        // GLOBAL VARIABLES
+        let currentSlide = 1;
+        const totalSlides = 9; // UPDATED to 9
+        let existingDataCount = 0;
+        let isPolling = false;
+        let studentName = "";
+        let creationMode = 'pantun';
+        let puzzleInitialized = false;
+        let pollingInterval;
+
+        // --- SUBMISSION LOGIC (SECURE) ---
+        async function hantarData() {
+            const karya = document.getElementById('karyaInput').value; 
+            const prosa = document.getElementById('prosaInput')?.value || "-";
+            const deskriptif = document.getElementById('deskriptifInput')?.value || "-";
+            
+            if (!karya) return alert("Sila tulis karya anda!");
+
+            const btn = document.getElementById('btnHantar');
+            const aiBox = document.getElementById('ai-comment');
+            const aiLoading = document.getElementById('ai-loading');
+
+            btn.innerText = "SEDANG MENGHUBUNGI SERVER...";
+            btn.disabled = true;
+            aiBox.style.display = 'none';
+            aiLoading.classList.remove('hidden');
+
+            try {
+                const response = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    redirect: "follow", 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ 
+                        nama: studentName, 
+                        karya: karya, 
+                        prosa: prosa, 
+                        deskriptif: deskriptif,
+                        mode: creationMode
+                    }) 
+                });
+                
+                const result = await response.json(); 
+                
+                aiLoading.classList.add('hidden');
+                
+                if (result.status === 'error') {
+                    document.getElementById('ai-text').innerText = "Ralat Sistem: " + result.message;
+                    document.getElementById('ai-score').innerText = "0/10";
+                    document.getElementById('ai-score').style.color = "red";
+                } else {
+                    document.getElementById('ai-text').innerText = result.ulasan || "Tiada ulasan diterima daripada AI.";
+                    document.getElementById('ai-score').innerText = (result.markah || "0") + "/10";
+                    
+                    const scoreNum = parseInt(result.markah);
+                    const scoreEl = document.getElementById('ai-score');
+                    if(scoreNum >= 8) scoreEl.style.color = "green";
+                    else if(scoreNum <= 4) scoreEl.style.color = "red";
+                    else scoreEl.style.color = "black";
+                }
+
+                aiBox.style.display = "block";
+                document.getElementById('statusMsg').classList.remove('hidden');
+
+                btn.innerText = "HANTAR SEMULA";
+                btn.disabled = false;
+
+            } catch (err) {
+                console.error(err);
+                aiLoading.classList.add('hidden');
+                aiBox.style.display = "block";
+                document.getElementById('ai-text').innerText = "Ralat Sambungan: " + err.message + ". Sila cuba lagi.";
+                btn.innerText = "CUBA LAGI";
+                btn.disabled = false;
+            }
+        }
+
+        // --- PHASE NAVIGATION ---
+        function nextPhase(phaseId) {
+            const phases = ['login', '1', '2', '3', '4', '5', '6'];
+            phases.forEach(p => { const el = document.getElementById(`phase-${p}`); if(el) el.classList.add('hidden'); });
+            const target = document.getElementById(`phase-${phaseId}`);
+            if (target) target.classList.remove('hidden');
+            window.scrollTo(0,0);
+            if(phaseId === 2) loadQuizQuestion();
+            if(phaseId === 3) initPuzzle();
+        }
+
+        // --- PUZZLE & QUIZ LOGIC (SAME AS BEFORE) ---
+        const puzzleData = [{ id: 0, text: "Tuai padi antara masak," }, { id: 1, text: "Esok jangan layu-layuan;" }, { id: 2, text: "Intai kami antara nampak," }, { id: 3, text: "Esok jangan rindu-rinduan." }];
+        let currentSlots = [null, null, null, null];
+        function initPuzzle() { if (puzzleInitialized) return; puzzleInitialized = true; const shuffled = [...puzzleData].sort(() => Math.random() - 0.5); const poolDiv = document.getElementById('option-pool'); poolDiv.innerHTML = ''; shuffled.forEach((item) => { const isUsed = currentSlots.includes(item.id); const btn = document.createElement('div'); btn.className = `puzzle-option ${isUsed ? 'used' : ''}`; btn.innerText = item.text; btn.onclick = () => selectLine(item.id); poolDiv.appendChild(btn); }); renderSlots(); }
+        function renderSlots() { for(let i=0; i<4; i++) { const slotDiv = document.getElementById(`slot-${i}`); const lineId = currentSlots[i]; const label = slotDiv.querySelector('.puzzle-label'); slotDiv.innerHTML = ''; slotDiv.appendChild(label); if (lineId !== null) { const textSpan = document.createElement('span'); textSpan.innerText = puzzleData.find(p => p.id === lineId).text; slotDiv.appendChild(textSpan); slotDiv.classList.add('filled'); } else { slotDiv.classList.remove('filled'); } } }
+        function selectLine(id) { const emptyIndex = currentSlots.indexOf(null); if (emptyIndex !== -1) { currentSlots[emptyIndex] = id; renderSlots(); } }
+        function returnLine(index) { if (currentSlots[index] !== null) { currentSlots[index] = null; renderSlots(); } }
+        function checkPuzzle() { const feedback = document.getElementById('puzzle-feedback'); if (currentSlots.includes(null)) return; if (currentSlots[0] === 0 && currentSlots[1] === 1 && currentSlots[2] === 2 && currentSlots[3] === 3) { feedback.innerHTML = `Tahniah ${studentName}! Struktur pantun anda tepat.`; feedback.className = "mt-4 font-bold text-xl text-green-600 block"; document.getElementById('btn-next-phase-3').classList.remove('hidden'); document.getElementById('btn-check-puzzle').classList.add('hidden'); } else { feedback.innerText = "Salah susunan. Ingat: Pembayang dulu, baru Maksud."; feedback.className = "mt-4 font-bold text-xl text-red-600 block"; } }
+
+        const quizQuestions = [
+            { q: "Sungguh indah pemandangan di ________ ini.", options: ["Pawana", "Mayapada", "Kencana"], answer: "Mayapada", meaning: "Dunia fana / Bumi", feedback: "Tepat!" },
+            { q: "Angin sepoi-sepoi bahasa, atau ________.", options: ["Sukma", "Pawana", "Kirana"], answer: "Pawana", meaning: "Angin yang bertiup lembut", feedback: "Betul!" },
+            { q: "Lagu irama asli itu menyentuh ________.", options: ["Sukma", "Nirmala", "Kencana"], answer: "Sukma", meaning: "Jiwa atau Roh", feedback: "Syabas!" },
+            { q: "Mahkota raja itu diperbuat daripada ________.", options: ["Kencana", "Bayu", "Nirmala"], answer: "Kencana", meaning: "Emas", feedback: "Tepat!" },
+            { q: "Wajah puteri berseri seperti ________.", options: ["Kirana", "Mayapada", "Ratna"], answer: "Kirana", meaning: "Sinar atau Cahaya", feedback: "Bijak!" },
+            { q: "Pagi yang hening itu terasa sungguh ________.", options: ["Nirmala", "Kencana", "Buana"], answer: "Nirmala", meaning: "Suci dan Bersih", feedback: "Benar!" },
+            { q: "Namanya harum ke seluruh ________.", options: ["Buana", "Sukma", "Pawana"], answer: "Buana", meaning: "Alam Semesta / Jagat", feedback: "Hebat!" },
+            { q: "Dia menjaga adiknya ibarat ________.", options: ["Ratna", "Pujangga", "Bayu"], answer: "Ratna", meaning: "Permata / Intan", feedback: "Tepat!" }
+        ];
+        let currentQuizIndex = 0;
+        function loadQuizQuestion() { const q = quizQuestions[currentQuizIndex]; document.getElementById('quiz-question').innerText = `"${q.q}"`; document.getElementById('quiz-progress').innerText = `Soalan ${currentQuizIndex + 1}/8`; const opts = document.getElementById('quiz-options'); opts.innerHTML = ''; document.getElementById('quiz-feedback').classList.add('hidden'); document.getElementById('correction-area').classList.add('hidden'); document.getElementById('btn-next-question').classList.add('hidden'); document.getElementById('btn-finish-quiz').classList.add('hidden'); q.options.forEach(o => { const btn = document.createElement('button'); btn.className = 'quiz-option text-black text-xl p-6'; btn.innerText = o; btn.onclick = () => checkQuiz(o, btn); opts.appendChild(btn); }); }
+        function checkQuiz(sel, btn) { const q = quizQuestions[currentQuizIndex]; const feedback = document.getElementById('quiz-feedback'); const corr = document.getElementById('correction-area'); const hint = document.getElementById('correct-word-hint'); btn.classList.add('selected'); if(sel === q.answer) { feedback.innerHTML = `✅ ${q.feedback}<br><span class="text-lg text-gray-600 italic">Makna: ${q.meaning}</span>`; feedback.className = "mb-6 text-2xl font-bold text-green-600 block"; feedback.classList.remove('hidden'); showNextBtn(); } else { document.querySelectorAll('.quiz-option').forEach(b => b.disabled=true); btn.classList.add('bg-red-200','border-red-500'); hint.innerText = q.answer; corr.classList.remove('hidden'); document.getElementById('correction-input').value=''; document.getElementById('correction-input').focus(); } }
+        function verifyCorrection() { const q = quizQuestions[currentQuizIndex]; const val = document.getElementById('correction-input').value.trim(); if(val.toLowerCase() === q.answer.toLowerCase()) { document.getElementById('correction-area').classList.add('hidden'); document.getElementById('quiz-feedback').innerHTML = `✅ Tahniah! Ejaan yang betul.<br><span class="text-lg text-gray-600 italic">Makna: ${q.meaning}</span>`; document.getElementById('quiz-feedback').classList.remove('hidden'); showNextBtn(); } else { alert("Ejaan salah!"); } }
+        function handleCorrectionEnter(e) { if(e.key === 'Enter') verifyCorrection(); }
+        function showNextBtn() { if(currentQuizIndex < 7) document.getElementById('btn-next-question').classList.remove('hidden'); else document.getElementById('btn-finish-quiz').classList.remove('hidden'); }
+        function nextQuestion() { currentQuizIndex++; loadQuizQuestion(); }
+
+        // --- GENERAL ---
+        function handleEnter(e) { if(e.key === 'Enter') studentLogin(); }
+        function studentLogin() { const input = document.getElementById('login-name'); if (input.value.trim() !== "") { studentName = input.value.trim(); document.getElementById('display-name').innerText = studentName; document.getElementById('student-name-display').classList.remove('hidden'); showToast(`Selamat datang, ${studentName}!`); nextPhase(1); } else { alert("Sila masukkan nama!"); } }
+        function showToast(msg) { const toast = document.getElementById('adibah-toast'); document.getElementById('adibah-toast-msg').innerText = msg; toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, 4000); }
+        function toggleDef(btn) { const def = btn.querySelector('.definition'); const instruction = btn.querySelector('.instruction'); const isHidden = def.classList.contains('hidden'); if (isHidden) { def.classList.remove('hidden'); instruction.classList.add('hidden'); btn.style.background = '#ffffff'; btn.classList.add('border-black'); } else { def.classList.add('hidden'); instruction.classList.remove('hidden'); btn.style.background = ''; } }
+        function saveAndNext(next, type) { const val = document.getElementById(type+'Input').value; if(!val.trim()) return alert('Sila tulis!'); showToast("Bagus! Teruskan."); nextPhase(next); }
+        function setCreationMode(mode) { creationMode = mode; const inputLabel = document.getElementById('karyaLabel'); const inputField = document.getElementById('karyaInput'); if (mode === 'pantun') { inputLabel.innerText = "Karya Anda (Pantun)"; inputField.placeholder = "Tuai padi antara masak..."; } else { inputLabel.innerText = "Karya Anda (Syair)"; inputField.placeholder = "Dengarlah kisah suatu riwayat..."; } }
+        function generateTheme() { const themes = ["Kasih Sayang", "Alam", "Pahlawan", "Budi"]; document.getElementById('theme-display').innerText = `Tema: "${themes[Math.floor(Math.random()*themes.length)]}"`; document.getElementById('theme-display').classList.remove('hidden'); }
+
+        // --- TEACHER & POLLING ---
+        function switchView(viewName) { 
+            document.getElementById('landing-view').classList.add('hidden'); 
+            document.getElementById('student-view').classList.add('hidden'); 
+            document.getElementById('teacher-view').classList.add('hidden'); 
+            
+            if (viewName === 'student') { 
+                document.getElementById('student-view').classList.remove('hidden'); 
+                document.getElementById('phase-login').classList.remove('hidden'); 
+            } else { 
+                document.getElementById('teacher-view').classList.remove('hidden'); 
+                document.getElementById('teacher-tabs').classList.remove('hidden'); 
+                document.getElementById('teacher-tabs').classList.add('flex'); 
+                toggleTeacherSection('notes'); 
+            } 
+        }
+
+        function toggleTeacherSection(section) { 
+            document.getElementById('section-notes').classList.toggle('hidden', section !== 'notes'); 
+            document.getElementById('section-live').classList.toggle('hidden', section !== 'live'); 
+            
+            if (section === 'live') {
+                if (!isPolling) startPolling();
+            } else {
+                stopPolling();
+            }
+        }
+
+        function changeSlide(dir) { const next = currentSlide + dir; if (next >= 1 && next <= totalSlides) { document.getElementById(`slide-${currentSlide}`).classList.remove('active'); document.getElementById(`slide-${next}`).classList.add('active'); currentSlide = next; updateSlideDots(); } }
+        function updateSlideDots() { const d = document.getElementById('slide-dots'); if(d) d.innerHTML = Array.from({length:totalSlides},(_,i)=>`<div class="h-3 transition-all duration-300 rounded-full ${i+1===currentSlide?'bg-black w-10':'bg-gray-300 w-3'}"></div>`).join(''); }
+        
+        // FETCHING DATA FROM GOOGLE SHEETS
+        async function fetchData() { 
+            try { 
+                const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`); 
+                const data = await res.json(); 
+                // data = [[timestamp, nama, mesej, ulasan], ...]
+                renderCards(data); 
+                document.getElementById('status-text').innerText = "LIVE";
+                document.getElementById('live-indicator').classList.remove('bg-gray-400');
+                document.getElementById('live-indicator').classList.add('bg-red-600', 'animate-pulse');
+            } catch(e) {
+                console.log("Polling error:", e);
+                document.getElementById('status-text').innerText = "RECONNECTING...";
+                document.getElementById('live-indicator').classList.remove('bg-red-600', 'animate-pulse');
+                document.getElementById('live-indicator').classList.add('bg-gray-400');
+            } 
+        }
+
+        // RENDERING CARDS (V5.5 STYLE)
+        function renderCards(data) { 
+            const container = document.getElementById('card-container'); 
+            if (data.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-400 font-bold italic">Belum ada data...</div>';
+                return;
+            }
+
+            container.innerHTML = data.slice().reverse().map(row => 
+                `<div class="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_#000] transition hover:-translate-y-1 hover:shadow-[12px_12px_0px_#000]">
+                    <div class="border-b-4 border-black pb-4 mb-4">
+                        <h3 class="font-black text-2xl uppercase tracking-widest">${row[1]}</h3>
+                        <span class="text-xs text-gray-500 font-bold uppercase">${new Date(row[0]).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="mb-6">
+                        <p class="italic font-serif text-lg leading-relaxed whitespace-pre-line text-gray-800">${row[2]}</p>
+                    </div>
+                    ${row[3] ? 
+                    `<div class="relative mt-6 p-6 bg-yellow-50 border-2 border-black">
+                        <span class="absolute -top-3 left-4 bg-black text-white px-3 py-1 text-xs font-bold uppercase tracking-widest">Ulasan Cikgu Adibah</span>
+                        <p class="italic font-serif text-sm leading-relaxed">${row[3]}</p>
+                    </div>` 
+                    : ''}
+                </div>`
+            ).join(''); 
+        }
+
+        function startPolling() { 
+            if(!isPolling) { 
+                isPolling = true; 
+                fetchData(); // Fetch immediately
+                pollingInterval = setInterval(fetchData, 3000); 
+            } 
+        }
+
+        function stopPolling() {
+            isPolling = false;
+            clearInterval(pollingInterval);
+        }
+
+        // --- INTERACTIVE GRADE A REVEAL ---
+        function toggleGradeA() {
+            const cover = document.getElementById('grade-a-cover');
+            if(cover) cover.style.display = 'none';
+            const content = document.getElementById('grade-a-content');
+            if(content) {
+                content.style.opacity = '1';
+                content.classList.remove('opacity-20');
+            }
+        }
+
+        function toggleFullScreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else if (document.exitFullscreen) document.exitFullscreen(); }
+        
+        document.addEventListener('keydown', (e) => { 
+            if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return; 
+            if(e.key.toLowerCase()==='f')toggleFullScreen(); 
+            if(!document.getElementById('section-notes').classList.contains('hidden')){
+                if(e.key==='ArrowLeft')changeSlide(-1);
+                if(e.key==='ArrowRight')changeSlide(1);
+            } 
+        });
+        
+        updateSlideDots();
+    </script>
+</body>
+</html>
